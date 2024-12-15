@@ -1,5 +1,8 @@
 # autoteach
 
+This repo regroups some scripts that helps automate common teaching
+tasks.
+
 ## studentize
 
 This script automates the process of creating a "studentized" version
@@ -23,7 +26,7 @@ The studentize transformation removes inplace:
 
 For example: 
 
-```
+```coq
 Proposition q1 :
   forall a:nat, a * 0 = 0.
 Proof.
@@ -44,7 +47,7 @@ Admitted.
 
 is rewritten into:
 
-```
+```coq
 Proposition q1 :
   forall a:nat, a * 0 = 0.
 Proof.
