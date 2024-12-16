@@ -15,6 +15,8 @@ if [[ ! -f "$QUESTION_FILE" ]]; then
     exit 1
 fi
 
+
+total=0
 # Create an associative array to store maximum grades for each question
 declare -A max_grades
 
@@ -51,8 +53,10 @@ while IFS=":" read -r question actual_grade; do
     if [[ -n "${max_grades[$question]}" ]]; then
         max_grade="${max_grades[$question]}"
         result=$(echo "$actual_grade * $max_grade" | bc -l)
+        total=$(echo "$total + $result" | bc -l)
         printf "%s:%.2f\n" "$question" "$result"
     else
         echo "Error: No maximum grade found for question '$question'" >&2
     fi
 done < "$GRADE_INPUT"
+echo $total
