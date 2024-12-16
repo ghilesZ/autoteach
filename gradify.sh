@@ -42,6 +42,8 @@ fi
 
 # Read from the grades input, calculate, and output the corresponding grades
 while IFS=":" read -r question actual_grade; do
+    question=$(echo "$question" | tr -d ' ')
+    actual_grade=$(echo "$actual_grade" | tr -d ' ')
     if ! [[ "$actual_grade" =~ ^0*(0(\.[0-9]+)?|1(\.0*)?)$ ]]; then
         echo "Error: Invalid grade '$actual_grade' for question '$question'. Grade must be between 0 and 1." >&2
         continue
