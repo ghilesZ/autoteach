@@ -8,7 +8,7 @@ tasks.
 ```
 git clone https://github.com/ghilesZ/autoteach.git
 cd autoteach
-chmox +x install.sh
+chmod +x install.sh
 ./install.sh
 cd ..
 rm -rf autoteach
