@@ -1,18 +1,42 @@
 #!/bin/bash
 
 # Check if usage is valid
-if [ $# -lt 3 ]; then
-    echo "Usage: $0 <file1> <file2> <command to execute> [ command options ]"
-    echo "I need a submission directory (.zip) and a csv file to complete (.csv) and a command to launch on all directories"
+if [[ "$#" -lt 2 || "$#" -gt 4 || "$*" != *--* ]]; then
+    echo "Usage: $0 [file1.zip] [file2.csv] -- <command to execute> [ command options ]"
+    echo "I need either a submission directory (.zip) and a CSV file (.csv), or none (auto-detection)."
+    echo "The '--' delimiter must separate the input files and the command to execute."
     exit 1
 fi
 
+# Extract arguments before and after '--'
+args_before_command=()
+args_after_command=()
+found_delimiter=false
+
+for arg in "$@"; do
+    if [ "$arg" == "--" ]; then
+        found_delimiter=true
+        continue
+    fi
+    if $found_delimiter; then
+        args_after_command+=("$arg")
+    else
+        args_before_command+=("$arg")
+    fi
+done
+
+if [ "${#args_after_command[@]}" -eq 0 ]; then
+    echo "Error: No command specified after '--'."
+    exit 1
+fi
+
+# Assign files and command
 zip_file=""
 csv_file=""
-command="${@:3}"
+command="${args_after_command[@]}"
 
-# Check the file extensions of the provided arguments
-for file in "${@:1:3}"; do
+# Check the file extensions of the provided arguments before '--'
+for file in "${args_before_command[@]}"; do
     if [[ "$file" == *.zip ]]; then
         zip_file="$file"
     elif [[ "$file" == *.csv ]]; then
@@ -20,15 +44,35 @@ for file in "${@:1:3}"; do
     fi
 done
 
-# Check if both variables were assigned
-if [ -z "$zip_file" ] || [ -z "$csv_file" ]; then
-    echo "Error: Please provide one .zip file and one .csv file."
-    exit 1
+# If not provided, search for a single .zip file in the current directory
+if [ -z "$zip_file" ]; then
+    zip_files=( *.zip )
+    # Check if the array contains actual files and not the literal pattern
+    if [ ${#zip_files[@]} -eq 1 ] && [ -f "${zip_files[0]}" ]; then
+        zip_file="${zip_files[0]}"
+        echo "Found single .zip file: $zip_file"
+    else
+        echo "Error: Either no .zip file or multiple .zip files found in the current directory."
+        exit 1
+    fi
+fi
+
+# If not provided, search for a single .csv file in the current directory
+if [ -z "$csv_file" ]; then
+    csv_files=( *.csv )
+    # Check if the array contains actual files and not the literal pattern
+    if [ ${#csv_files[@]} -eq 1 ] && [ -f "${csv_files[0]}" ]; then
+        csv_file="${csv_files[0]}"
+        echo "Found single .csv file: $csv_file"
+    else
+        echo "Error: Either no .csv file or multiple .csv files found in the current directory."
+        exit 1
+    fi
 fi
 
 # Check if both actually exist
-[ ! -f "$zip_file" ] && { echo "zip file $zip_file not found!"; exit 1; }
-[ ! -f "$csv_file" ] && { echo "csv file $csp_file not found!"; exit 1; }
+[ ! -f "$zip_file" ] && { echo "Error: zip file $zip_file not found!"; exit 1; }
+[ ! -f "$csv_file" ] && { echo "Error: csv file $csv_file not found!"; exit 1; }
 
 # Create a directory to store the results of the autograding
 printf -v date '%(%Y-%m)T'
@@ -36,7 +80,7 @@ destination=submissions_"$date"
 mkdir -p "$destination"
 # when things go bad, faulty submissions are copied here
 mkdir -p "$destination"/manual_grading
-#graded
+# graded
 mkdir -p "$destination"/done
 # yet to grade
 unzip -o -q -d "$destination"/to_process "$zip_file"
@@ -69,7 +113,7 @@ for student in "$destination"/to_process/*; do
         ((NB++))
         echo -en "\r\033[K$NB/$TOTAL"
         # if the student has already been graded (on a previous
-        # interupted run), we skip it
+        # interrupted run), we skip it
         if [ -d "$destination/done/$dirname" ]; then
             ((NB_OK++))
             continue
