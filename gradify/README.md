@@ -9,7 +9,7 @@ accept grades from either a file or standard input.
 It can also display the total grade if the -total option is used.
 
 ## Usage
-```bash
+```sh
 ./gradify.sh <scale> [grades_file] [-total]
 ```
 
@@ -37,9 +37,9 @@ Q2:6.00
 Q3:3.00
 ```
 
-Or,  from standar input:
+Or,  from standard input:
 
-```
+```sh
 echo -e "q2:0\nq3:0.5"| ./gradify.sh scale.txt  -total
 ```
 which outputs:
