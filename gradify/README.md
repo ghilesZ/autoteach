@@ -6,9 +6,11 @@ maximum grades defined in a separate file. The script outputs the
 scaled grades for each question and calculates the total score. It can
 accept grades from either a file or standard input.
 
+It can also display the total grade if the -total option is used.
+
 ## Usage
 ```bash
-./gradify.sh <question_file> [grades_file]
+./gradify.sh <scale> [grades_file] [-total]
 ```
 
 ## Example
@@ -27,11 +29,22 @@ Q2:0.6
 Q3:1
 ```
 
-```./script.sh questions.txt grades.txt```
+```./gradify.sh scale.txt grades.txt```
 
 ```
 Q1:4.00
 Q2:6.00
 Q3:3.00
-13.00
+```
+
+Or,  from standar input:
+
+```
+echo -e "q2:0\nq3:0.5"| ./gradify.sh scale.txt  -total
+```
+which outputs:
+```
+q2:0.00
+q3:1.5
+1.5
 ```

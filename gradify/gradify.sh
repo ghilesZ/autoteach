@@ -1,10 +1,19 @@
 #!/bin/bash
 
-# Ensure that either one or two argument are given
-if [[ $# -lt 1 || $# -gt 2 ]]; then
-    echo "Usage: $0 <question_file> [grades_file]"
+# Ensure that at least one argument is given
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <scale> [grades_file] [-total]"
     exit 1
 fi
+
+# Parse the options
+TOTAL_OPTION=false
+for arg in "$@"; do
+    if [[ "$arg" == "-total" ]]; then
+        TOTAL_OPTION=true
+        break
+    fi
+done
 
 # Read the question file from the first argument
 QUESTION_FILE="$1"
@@ -14,7 +23,6 @@ if [[ ! -f "$QUESTION_FILE" ]]; then
     echo "Error: File '$QUESTION_FILE' not found"
     exit 1
 fi
-
 
 total=0
 # Create an associative array to store maximum grades for each question
@@ -26,7 +34,7 @@ while IFS=":" read -r question max_grade; do
 done < "$QUESTION_FILE"
 
 # Check if a grades file is provided as the second argument
-if [[ $# -eq 2 ]]; then
+if [[ $# -ge 2 && "$2" != "-total" ]]; then
     GRADES_FILE="$2"
 
     # Check if the grades file exists
@@ -59,4 +67,8 @@ while IFS=":" read -r question actual_grade; do
         echo "Error: No maximum grade found for question '$question'" >&2
     fi
 done < "$GRADE_INPUT"
-echo $total
+
+# Print the total only if the -total option is active
+if $TOTAL_OPTION; then
+    printf "%.2f\n" "$total"
+fi
