@@ -1,10 +1,11 @@
 # moulinette
  
 This script automates the process of grading several submissions,
-packed within a zip archive (as downloaded from moodle):
+packed within a zip archive (as downloaded from moodle) and fills a
+grade book in csv format (as downloaded from moodle).
 
 ```sh
-moulinette grade-book.csv submission.zip -- echo 0
+moulinette grade-book.csv submission.zip -- echo $(( RANDOM % 21 ))
 ```
 
 The `moulinette` command takes three arguments (the first two are
