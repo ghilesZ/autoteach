@@ -3,6 +3,10 @@
 # Default timeout value (can be overridden by the -timeout option)
 timeout_value=""
 
+#########
+# USAGE #
+#########
+
 # Check if usage is valid (at least the separator -- and the grading
 # command are provided)
 if [[ "$#" -lt 2 || "$*" != *--* ]]; then
@@ -13,6 +17,10 @@ if [[ "$#" -lt 2 || "$*" != *--* ]]; then
     echo "The '--' delimiter must separate the input files and the command to execute."
     exit 1
 fi
+
+#####################
+# ARGUMENT HANDLING #
+#####################
 
 # Parse arguments before and after '--'
 args_before_command=()
@@ -78,7 +86,7 @@ find_single_file() {
         exit 1
     elif [ -f "${files[0]}" ]; then
         eval "$__result_var='${files[0]}'"
-        echo "Found single .$file_extension file: ${files[0]}"
+        echo "$file_extension file detected : ${files[0]}"
     fi
 }
 
@@ -90,10 +98,9 @@ find_single_file() {
 [ ! -f "$zip_file" ] && { echo "Error: zip file $zip_file not found!"; exit 1; }
 [ ! -f "$csv_file" ] && { echo "Error: csv file $csv_file not found!"; exit 1; }
 
-# Optional: Print the timeout value if set
-if [ -n "$timeout_value" ]; then
-    echo "Timeout set to $timeout_value seconds."
-fi
+##############
+# MAIN STUFF #
+##############
 
 # Create a directory to store the results of the autograding
 printf -v date '%(%Y-%m)T'
@@ -132,7 +139,7 @@ for student in "$destination"/to_process/*; do
     dirname=$(basename "$student")
     if [[ "$dirname" =~ $dirregexp ]]; then
         ((NB++))
-        echo -en "\r\033[K$NB/$TOTAL"
+        echo -en "\r\033[K$NB/$TOTAL ($NB_OK good, $NB_BAD bad)"
         # if the student has already been graded (on a previous
         # interrupted run), we skip it
         if [ -d "$destination/done/$dirname" ]; then
@@ -145,11 +152,19 @@ for student in "$destination"/to_process/*; do
         fi
         name="${BASH_REMATCH[1]}"
         printf "$name\n" >> "$destination"/grades.log
-        eval $command '"$student"' >> "$destination"/grades.log
+
+        # Execute the command with optional timeout
+        if [ -n "$timeout_value" ]; then
+            timeout "$timeout_value" bash -c "$command \"$student\"" >> "$destination"/grades.log
+        else
+            bash -c "$command \"$student\"" >> "$destination"/grades.log
+        fi
+
         ret=$?
-        g=$(tail -n 1 "$destination"/grades.log)
+
         if [[ $ret == 0 ]]; then
-            gradeCSV "$csv_file" "$name" $g $column_number >> "$destination"/grades.csv
+          g=$(tail -n 1 "$destination"/grades.log)
+          gradeCSV "$csv_file" "$name" $g $column_number >> "$destination"/grades.csv
             ret=$?
             if [[ $ret == 0 ]]; then
                 ((NB_OK++))
