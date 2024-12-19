@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# Check if usage is valid
-if [[ "$#" -lt 2 || "$#" -gt 4 || "$*" != *--* ]]; then
+# Check if usage is valid (at least the separator -- and the grading
+# command are provided)
+
+if [[ "$#" -lt 2 || "$*" != *--* ]]; then
     echo "Usage: $0 [file1.zip] [file2.csv] -- <command to execute> [ command options ]"
-    echo "I need either a submission directory (.zip) and a CSV file (.csv), or none (auto-detection)."
+    echo "I need a submission directory (.zip) and a CSV file (.csv), to be given or present in the current directory."
     echo "The '--' delimiter must separate the input files and the command to execute."
     exit 1
 fi
@@ -63,7 +65,7 @@ if [ -z "$csv_file" ]; then
     # Check if the array contains actual files and not the literal pattern
     if [ ${#csv_files[@]} -eq 1 ] && [ -f "${csv_files[0]}" ]; then
         csv_file="${csv_files[0]}"
-        echo "Found single .csv file: $csv_file"
+        echo "Found .csv file: $csv_file"
     else
         echo "Error: Either no .csv file or multiple .csv files found in the current directory."
         exit 1
