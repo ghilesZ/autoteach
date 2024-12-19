@@ -1,31 +1,49 @@
 #!/bin/bash
 
+# Default timeout value (can be overridden by the -timeout option)
+timeout_value=""
+
 # Check if usage is valid (at least the separator -- and the grading
 # command are provided)
-
 if [[ "$#" -lt 2 || "$*" != *--* ]]; then
-    echo "Usage: $0 [file1.zip] [file2.csv] -- <command to execute> [ command options ]"
+    echo "Usage: $0 [options] [file1.zip] [file2.csv] -- <command to execute> [command options]"
+    echo "Options:"
+    echo "  -timeout <seconds>  Specify a timeout in seconds for the command."
     echo "I need a submission directory (.zip) and a CSV file (.csv), to be given or present in the current directory."
     echo "The '--' delimiter must separate the input files and the command to execute."
     exit 1
 fi
 
-# Extract arguments before and after '--'
+# Parse arguments before and after '--'
 args_before_command=()
 args_after_command=()
 found_delimiter=false
 
-for arg in "$@"; do
-    if [ "$arg" == "--" ]; then
-        found_delimiter=true
-        continue
-    fi
-    if $found_delimiter; then
-        args_after_command+=("$arg")
-    else
-        args_before_command+=("$arg")
-    fi
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -timeout)
+            shift
+            if [[ "$#" -eq 0 || ! "$1" =~ ^[0-9]+$ ]]; then
+                echo "Error: -timeout option requires an integer parameter."
+                exit 1
+            fi
+            timeout_value="$1"
+            ;;
+        --)
+            found_delimiter=true
+            shift
+            break
+            ;;
+        *)
+            args_before_command+=("$1")
+            ;;
+    esac
+    shift
 done
+
+if $found_delimiter; then
+    args_after_command=("$@")
+fi
 
 if [ "${#args_after_command[@]}" -eq 0 ]; then
     echo "Error: No command specified after '--'."
@@ -46,35 +64,36 @@ for file in "${args_before_command[@]}"; do
     fi
 done
 
-# If not provided, search for a single .zip file in the current directory
-if [ -z "$zip_file" ]; then
-    zip_files=( *.zip )
-    # Check if the array contains actual files and not the literal pattern
-    if [ ${#zip_files[@]} -eq 1 ] && [ -f "${zip_files[0]}" ]; then
-        zip_file="${zip_files[0]}"
-        echo "Found single .zip file: $zip_file"
-    else
-        echo "Error: Either no .zip file or multiple .zip files found in the current directory."
-        exit 1
-    fi
-fi
+# Exits with an error message if no file or multiple files are found
+find_single_file() {
+    local file_extension="$1"
+    local __result_var="$2"
+    local files=( *."$file_extension" )
 
-# If not provided, search for a single .csv file in the current directory
-if [ -z "$csv_file" ]; then
-    csv_files=( *.csv )
-    # Check if the array contains actual files and not the literal pattern
-    if [ ${#csv_files[@]} -eq 1 ] && [ -f "${csv_files[0]}" ]; then
-        csv_file="${csv_files[0]}"
-        echo "Found .csv file: $csv_file"
-    else
-        echo "Error: Either no .csv file or multiple .csv files found in the current directory."
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "Error: No .$file_extension file found in the current directory."
         exit 1
+    elif [ ${#files[@]} -gt 1 ]; then
+        echo "Error: Multiple .$file_extension files found in the current directory."
+        exit 1
+    elif [ -f "${files[0]}" ]; then
+        eval "$__result_var='${files[0]}'"
+        echo "Found single .$file_extension file: ${files[0]}"
     fi
-fi
+}
+
+# If not provided, search for a single .zip and .csv file in the current directory
+[ -z "$zip_file" ] && find_single_file "zip" zip_file
+[ -z "$csv_file" ] && find_single_file "csv" csv_file
 
 # Check if both actually exist
 [ ! -f "$zip_file" ] && { echo "Error: zip file $zip_file not found!"; exit 1; }
 [ ! -f "$csv_file" ] && { echo "Error: csv file $csv_file not found!"; exit 1; }
+
+# Optional: Print the timeout value if set
+if [ -n "$timeout_value" ]; then
+    echo "Timeout set to $timeout_value seconds."
+fi
 
 # Create a directory to store the results of the autograding
 printf -v date '%(%Y-%m)T'
