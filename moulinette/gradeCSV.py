@@ -20,9 +20,6 @@ col = sys.argv[4]
 
 try:
     col_index = int(col) - 1  # Convert col to an integer and adjust for zero-based index
-    if col_index < 0 or col_index >= len(row):
-        raise IndexError("Column index is out of range.")
-    row[col_index] = grade  # Assign the grade to the corresponding column
 except ValueError:
     print(f"Error: 'col' must be a valid integer. Received: {repr(col)}")
     exit(1)
@@ -56,7 +53,9 @@ with open(filename, newline='') as csvfile:
         dirname=fstname+"_"+lastname
         if (dirname == normalize(studentname)):
             found=True
-            row[int(col)-1]=grade
+            if col_index < 0 or col_index >= len(row):
+                raise IndexError("Column index is out of range.")
+            row[col_index] = grade
             print(', '.join(row))
             exit(0)
     if not found:

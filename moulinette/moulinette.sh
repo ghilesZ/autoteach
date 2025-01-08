@@ -122,12 +122,14 @@ dirregexp="(^.*)_[0-9]+_assignsubmission_file_?"
 rm -f $destination/grades.log
 
 # Assignment name to search for
-assignment_name=$(echo "$zip_file" | awk -F'-' '{print $2}')
+assignment_name=$(echo "$zip_file" | sed 's/^[^-]*-\([^ -]* - [^ -]*\)-.*$/\1/')
 
 # Get the header row and find the column number of the assignment
 header=$(head -n 1 "$csv_file")
 columns=$(echo "$header" | tr ',' '\n')
 column_number=$(echo "$columns" | grep -n "$assignment_name" | cut -d ':' -f 1)
+
+echo "grading of $assignment_name (column n° $column_number in the CSV)"
 
 NB_OK=0
 NB_BAD=0
@@ -164,7 +166,7 @@ for student in "$destination"/to_process/*; do
 
         if [[ $ret == 0 ]]; then
           g=$(tail -n 1 "$destination"/grades.log)
-          gradeCSV "$csv_file" "$name" $g $column_number >> "$destination"/grades.csv
+          gradeCSV "$csv_file" "$name" "$g" "$column_number" >> "$destination"/grades.csv
             ret=$?
             if [[ $ret == 0 ]]; then
                 ((NB_OK++))
