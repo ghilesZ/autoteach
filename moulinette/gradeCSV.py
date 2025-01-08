@@ -18,6 +18,18 @@ studentname = sys.argv[2]
 grade = sys.argv[3]
 col = sys.argv[4]
 
+try:
+    col_index = int(col) - 1  # Convert col to an integer and adjust for zero-based index
+    if col_index < 0 or col_index >= len(row):
+        raise IndexError("Column index is out of range.")
+    row[col_index] = grade  # Assign the grade to the corresponding column
+except ValueError:
+    print(f"Error: 'col' must be a valid integer. Received: {repr(col)}")
+    exit(1)
+except IndexError as e:
+    print(f"Error: {e}")
+    exit(1)
+
 def normalize(str):
     # Translation map for corrupted characters
     translation_map = {
