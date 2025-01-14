@@ -1,18 +1,7 @@
 # studentize
 
 This script automates the process of creating a "studentized" version
-of a source file or directory. It has two modes of operation based on
-the type of input:
-
-- If the source is a single file: applies "studentize" transformations
-to the file (removing specific patterns and blocks of text).  Saves
-the processed file to the specified destination.
-
-- If the source is a directory: copies the directory to the
-destination. Applies "studentize" transformations to all text files in
-the directory.  If a Makefile exists, it verifies that `make` and
-optionnally `make test` can run without errors. Creates a compressed
-.tgz archive of the processed directory.
+of a source file or directory.
 
 The studentize transformation removes inplace:
 - Lines containing "sujet"
@@ -49,3 +38,19 @@ Proof.
    admit.
 Admitted.
 ```
+
+# Behaviour
+It has two modes of operation based on the type of input:
+
+- If the source is a single file: applies "studentize" transformations
+to the file (removing specific patterns and blocks of text).  Saves
+the processed file to the specified destination.
+
+- If the source is a directory: copies the directory to the
+destination. Applies "studentize" transformations to all text files in
+the directory.  If a Makefile exists, it verifies that `make` and
+optionnally `make test` can run without errors. Creates a compressed
+.tgz archive of the processed directory. It is possible to excluded
+whole files to be added in the student version by having them begin
+with "corrige" and end with "/corrige".
+
