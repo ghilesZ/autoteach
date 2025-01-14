@@ -38,6 +38,9 @@ if [ -d "$SRC" ]; then
         apply_studentize "$file"
     done
 
+    # Remove files that are empty
+    find "$DST" -type f -empty -delete
+
     # Build the archive
     subdir="$DST/$(basename "$SRC")"
     pushd "$subdir" > /dev/null
@@ -75,7 +78,6 @@ if [ -d "$SRC" ]; then
             echo "'make clean' target not found, skipping clean."
         fi
     fi
-
 
     tarname="$DST.tgz"
     tar -czf "$tarname" *
