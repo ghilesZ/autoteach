@@ -141,7 +141,7 @@ for student in "$destination"/to_process/*; do
     dirname=$(basename "$student")
     if [[ "$dirname" =~ $dirregexp ]]; then
         ((NB++))
-        echo -en "\r\033[K$NB/$TOTAL ($NB_OK good, $NB_BAD bad)"
+        echo -en "\r\033[K$NB/$TOTAL ($NB_OK good, $NB_BAD bad, $NB_ERROR error)"
         # if the student has already been graded (on a previous
         # interrupted run), we skip it
         if [ -d "$destination/done/$dirname" ]; then
@@ -153,7 +153,7 @@ for student in "$destination"/to_process/*; do
             continue
         fi
         name="${BASH_REMATCH[1]}"
-        printf "$name\n" >> "$destination"/grades.log
+        printf "\n\n-----------------------------\n$name\n-----------------------------\n\n" >> "$destination"/grades.log
 
         # Execute the command with optional timeout
         if [ -n "$timeout_value" ]; then
@@ -167,13 +167,14 @@ for student in "$destination"/to_process/*; do
         if [[ $ret == 0 ]]; then
           g=$(tail -n 1 "$destination"/grades.log)
           gradeCSV "$csv_file" "$name" "$g" "$column_number" >> "$destination"/grades.csv
-            ret=$?
-            if [[ $ret == 0 ]]; then
-                ((NB_OK++))
-                mv "$student" $destination/done/
-            else
-                ((NB_ERROR++))
-            fi
+          ret=$?
+          if [[ $ret == 0 ]]; then
+              ((NB_OK++))
+              mv "$student" $destination/done/
+          else
+              ((NB_ERROR++))
+              mv "$student" $destination/manual_grading/
+          fi
         else
             ((NB_BAD++))
             mv "$student" $destination/manual_grading/

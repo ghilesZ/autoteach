@@ -15,8 +15,14 @@ if len(sys.argv) <= 4:
 
 filename = sys.argv[1]
 studentname = sys.argv[2]
-grade = sys.argv[3]
+g = sys.argv[3]
 col = sys.argv[4]
+
+try:
+    grade = float(g)  # Convert grade to a float
+except ValueError:
+    print(f"Error: 'grade' must be a valid number. Received: {repr(g)}")
+    exit(1)
 
 try:
     col_index = int(col) - 1  # Convert col to an integer and adjust for zero-based index
@@ -55,7 +61,7 @@ with open(filename, newline='') as csvfile:
             found=True
             if col_index < 0 or col_index >= len(row):
                 raise IndexError("Column index is out of range.")
-            row[col_index] = grade
+            row[col_index] = str(grade)
             print(', '.join(row))
             exit(0)
     if not found:
