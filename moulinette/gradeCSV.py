@@ -44,7 +44,11 @@ def normalize(str):
         "├д" : "ä",
         "├п" : "ï",
         "├в" : "â",
-        "├е" : "å"
+        "├е" : "å",
+        "┼б" : "š"
+        "├б" : "á"
+        "├к" : "ê"
+        "├Й" : "É"
     }
     for corrupted, correct in translation_map.items():
         str = str.replace(corrupted, correct)
