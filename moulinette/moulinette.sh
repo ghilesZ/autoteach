@@ -122,7 +122,8 @@ dirregexp="(^.*)_[0-9]+_assignsubmission_file_?"
 rm -f $destination/grades.log
 
 # Assignment name to search for
-assignment_name=$(echo "$zip_file" | sed 's/^[^-]*-\([^ -]* - [^ -]*\)-.*$/\1/')
+tp_number=$(echo "$zip_file" | sed -E 's/.*TP([0-9]+).*/\1/')
+assignment_name="Devoir TP$tp_number (Brut)"
 
 # Get the header row and find the column number of the assignment
 header=$(head -n 1 "$csv_file")
